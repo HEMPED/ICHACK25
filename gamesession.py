@@ -30,20 +30,8 @@ class GameSession:
         return len(self.players) == 4
 
     def start_game(self):
-        """Randomly assign turn order and mark game as started."""
-        # Generate a random turn order using the player IDs
         all_player_ids = list(self.players.keys())
-        random.shuffle(all_player_ids)
-        self.turn_order = all_player_ids
         self.game_started = True
-        self.current_turn_index = 0
-
-    def get_current_player_id(self) -> str:
-        return self.turn_order[self.current_turn_index] if self.game_started else ""
-
-    def next_turn(self):
-        if self.game_started:
-            self.current_turn_index = (self.current_turn_index + 1) % len(self.turn_order)
 
 
     def add_to_story(self, snippet: str):

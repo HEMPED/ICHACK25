@@ -2,7 +2,7 @@ import uuid
 import random
 from typing import Dict, List
 from gamesession import GameSession, Player
-#from promptgeneration import generate_prompt
+from promptgeneration import generate_prompt
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
 
@@ -97,6 +97,12 @@ async def websocket_endpoint(websocket: WebSocket):
                     "message": f"Joined session {session_id} as {player_id}"
                 })
 
+                await broadcast_to_session(session, {
+                    "event": "player_joined",
+                    "player_id": player_id,
+                    "player_name": player_name
+                })
+
                 # Check if session is full => start the game
                 if session.is_full() and not session.game_started:
                     session.start_game()
@@ -138,7 +144,8 @@ async def websocket_endpoint(websocket: WebSocket):
                 await broadcast_to_session(session, {
                     "event": "turn_updated",
                     "session_id": session.session_id,
-                    "current_turn_player": session.get_current_player_id()
+                    "current_turn_player": session.get_current_player_id(),
+                    "start_prompt": generate_prompt()
                 })
 
             # 4. SUBMIT_SNIPPET
