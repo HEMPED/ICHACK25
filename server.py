@@ -127,14 +127,6 @@ async def websocket_endpoint(websocket: WebSocket):
 
                 session = sessions[joined_session_id]
 
-                # Check if it's the current turn player's snippet
-                if session.get_current_player_id() != player_id:
-                    await websocket.send_json({
-                        "event": "error",
-                        "error": "It is not your turn to submit a snippet."
-                    })
-                    continue
-
                 snippet_text = data.get("snippet", "")
                 if not snippet_text:
                     await websocket.send_json({
