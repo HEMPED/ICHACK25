@@ -94,7 +94,8 @@ async def websocket_endpoint(websocket: WebSocket):
                     "event": "session_joined",
                     "session_id": session_id,
                     "player_id": player_id,
-                    "message": f"Joined session {session_id} as {player_id}"
+                    "message": f"Joined session {session_id} as {player_id}",
+                    "existing_players": [{"player_id": p.player_id, "player_name": p.name} for p in session.players.values()]
                 })
 
                 await broadcast_to_session(session, {
@@ -113,40 +114,6 @@ async def websocket_endpoint(websocket: WebSocket):
                         "current_turn_player": session.get_current_player_id()
                     })
 
-            # 3. (Optional) NEXT TURN (Example of how you might move the turn)
-            elif action == "next_turn":
-                if joined_session_id is None:
-                    # Not in any session
-                    await websocket.send_json({
-                        "event": "error",
-                        "error": "You are not in a session."
-                    })
-                    continue
-
-                session = sessions[joined_session_id]
-                if not session.game_started:
-                    await websocket.send_json({
-                        "event": "error",
-                        "error": "Game has not started yet."
-                    })
-                    continue
-
-                # Only let the current turn player call next_turn (or just skip checks in a quick prototype)
-                if session.get_current_player_id() != player_id:
-                    await websocket.send_json({
-                        "event": "error",
-                        "error": "It is not your turn."
-                    })
-                    continue
-
-                # Move to the next turn
-                session.next_turn()
-                await broadcast_to_session(session, {
-                    "event": "turn_updated",
-                    "session_id": session.session_id,
-                    "current_turn_player": session.get_current_player_id(),
-                    "start_prompt": generate_prompt()
-                })
 
             # 4. SUBMIT_SNIPPET
             elif action == "submit_snippet":

@@ -12,8 +12,6 @@ class GameSession:
         self.session_id = session_id
         self.players: dict[str, Player] = {}
         self.game_started = False
-        self.turn_order: list[str] = []
-        self.current_turn_index = 0
 
         self.story = ""  # The story so far
         self.votes = {}  # {player_id: "good"/"bad"/"neutral"}
