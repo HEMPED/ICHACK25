@@ -1,6 +1,8 @@
 import uuid
 import random
 from typing import Dict, List
+from gamesession import GameSession, Player
+from promptgeneration import generate_prompt
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
 

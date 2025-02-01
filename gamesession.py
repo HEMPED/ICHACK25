@@ -1,9 +1,18 @@
+import random
+from fastapi import  WebSocket
+
+class Player:
+    def __init__(self, player_id: str, name: str, ws: WebSocket):
+        self.player_id = player_id
+        self.name = name
+        self.websocket = ws
+
 class GameSession:
     def __init__(self, session_id: str):
         self.session_id = session_id
-        self.players: Dict[str, Player] = {}
+        self.players: dict[str, Player] = {}
         self.game_started = False
-        self.turn_order: List[str] = []
+        self.turn_order: list[str] = []
         self.current_turn_index = 0
 
     def add_player(self, player: Player):
@@ -32,9 +41,5 @@ class GameSession:
         if self.game_started:
             self.current_turn_index = (self.current_turn_index + 1) % len(self.turn_order)
 
-class Player:
-    def __init__(self, player_id: str, name: str, ws: WebSocket):
-        self.player_id = player_id
-        self.name = name
-        self.websocket = ws
+
 
