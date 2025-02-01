@@ -1,6 +1,7 @@
 import random
 from fastapi import  WebSocket
 from typing import List
+from promptgeneration import PromptGenerator
 
 message = "Create a starting prompt for a version of madlibs where the blanks are the last few words of the sentence. Just a single sentence."
 
@@ -20,6 +21,7 @@ class GameSession:
         self.votes = {}  # {player_id: score}
         self.voted = {}
         self.snippet_results = {}  # {player_id: snippet}
+        self.starting_prompt = PromptGenerator().generate_prompt(message)
 
     def add_player(self, player: Player):
         self.players[player.player_id] = player
@@ -37,9 +39,7 @@ class GameSession:
         self.reset_votes()
         all_player_ids = list(self.players.keys())
         random.shuffle(all_player_ids)
-        self.turn_order = all_player_ids
         self.game_started = True
-        self.current_turn_index = 0
 
     def get_current_player_id(self) -> str:
         return self.turn_order[self.current_turn_index] if self.game_started else ""
@@ -60,7 +60,15 @@ class GameSession:
             
 
     def set_snippet(self, snippet: str, player_id: str):
-        self.snippet_results[player_id] = snippet
+        #check if player has already submitted a snippet
+        if player_id not in self.snippet_results:
+            self.snippet_results[player_id] = snippet
+        
+        #check if all players have submitted a snippet
+        if len(self.snippet_results) == 4:
+            return True
+        else:
+            return False
 
 
     def record_vote(self, voter_id: str, vote_value: List[str]):
@@ -80,7 +88,6 @@ class GameSession:
             if not self.voted[player]:
                 return False
 
-        self.reset_votes()
         return True
 
     def tally_votes_and_finalize(self):
@@ -92,5 +99,4 @@ class GameSession:
                 winner = player
         
         self.story += self.snippet_results[winner]
-        return winner
-
+        return self.snippet_results[winner]

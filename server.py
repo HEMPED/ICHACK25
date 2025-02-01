@@ -4,6 +4,7 @@ from typing import Dict, List
 from gamesession import GameSession, Player
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
+from promptgeneration import PromptGenerator
 
 app = FastAPI()
 
@@ -83,7 +84,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     })
                     continue
 
-                # Add this player to the session
+
                 player = Player(player_id, player_name, websocket)
                 
                 joined_session_id = session_id
@@ -103,6 +104,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 })
 
                 session.add_player(player)
+                print("Player joined session", session_id)
 
                 # Check if session is full => start the game
                 if session.is_full() and not session.game_started:
@@ -110,8 +112,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     await broadcast_to_session(session, {
                         "event": "game_started",
                         "session_id": session.session_id,
-                        "turn_order": session.turn_order,
-                        "current_turn_player": session.get_current_player_id()
+                        "starting_prompt": session.starting_prompt
                     })
 
 
@@ -136,17 +137,20 @@ async def websocket_endpoint(websocket: WebSocket):
                     continue
 
                 # Store the snippet in session
-                session.set_snippet(snippet_text, player_id)
+                all_snippets_in = session.set_snippet(snippet_text, player_id)
 
-                # Broadcast snippet to everyone
-                await broadcast_to_session(session, {
+                await websocket.send_json({
                     "event": "snippet_submitted",
-                    "player_id": player_id,
-                    "snippet_text": snippet_text
+                    "message": "Snippet submitted successfully."
                 })
 
-                # Now, the other players can vote. We might not move the turn yet;
-                # we wait for "submit_vote" from each player.
+                if all_snippets_in:
+                    # Broadcast snippet to everyone
+                    await broadcast_to_session(session, {
+                        "event": "all_snippets_submitted",
+                        "snippets": session.snippet_results
+                    })
+
 
             # 5. SUBMIT_VOTE
             elif action == "submit_votes":
@@ -172,13 +176,15 @@ async def websocket_endpoint(websocket: WebSocket):
 
                 # Check if all players have voted
                 if session.all_votes_in():
-                    tally = session.tally_votes_and_finalize()
+                    winning_snippet = session.tally_votes_and_finalize()
                     
                     # Broadcast final results for this snippet
                     await broadcast_to_session(session, {
                         "event": "votes_finalized",
-                        "tally": tally
+                        "winning_snippet": winning_snippet
                     })
+
+                    session.reset_votes()
 
 
             else:
