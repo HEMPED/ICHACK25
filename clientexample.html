@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>COE Client Example</title>
+</head>
+
+<body>
+    <button id="connectBtn">Connect</button>
+    <button id="createSessionBtn">Create Session</button>
+    <button id="joinSessionBtn">Join Session</button>
+    <button id="submitSnippetBtn">Submit Snippet</button>
+    <button id="voteGoodBtn">Vote Good</button>
+    <button id="voteBadBtn">Vote Bad</button>
+    <button id="voteNeutralBtn">Vote Neutral</button>
+    <div id="logs"></div>
+
+    <script>
+        let socket = null;
+        let sessionId = null;
+        let playerId = null;
+
+        const logsDiv = document.getElementById('logs');
+        const logMessage = (msg) => {
+            logsDiv.innerHTML += `<p>${msg}</p>`;
+        };
+
+        document.getElementById('connectBtn').onclick = () => {
+            // Connect to your FastAPI WebSocket server
+            socket = new WebSocket("ws://127.0.0.1:8000/ws");
+
+            socket.onopen = () => {
+                logMessage("WebSocket connected!");
+            };
+
+            socket.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                logMessage("Server says: " + JSON.stringify(data, null, 2));
+
+                switch (data.event) {
+                    case "session_created":
+                        sessionId = data.session_id;
+                        playerId = data.player_id;
+                        break;
+                    case "session_joined":
+                        sessionId = data.session_id;
+                        playerId = data.player_id;
+                        break;
+                    case "game_started":
+                        logMessage("Game started. Turn order: " + data.turn_order);
+                        break;
+                    case "snippet_submitted":
+                        logMessage("Player " + data.player_id + " submitted: " + data.snippet_text);
+                        break;
+                    case "vote_received":
+                        logMessage("Player " + data.voter_id + " voted: " + data.vote_value);
+                        break;
+                    case "votes_finalized":
+                        logMessage("Votes are in! Tally: " + JSON.stringify(data.tally));
+                        break;
+                    case "turn_updated":
+                        logMessage("Now it's " + data.current_turn_player + "'s turn.");
+                        break;
+                        // ... handle other events ...
+                    case "error":
+                        logMessage("Error: " + data.error);
+                        break;
+                    default:
+                        break;
+                }
+            };
+
+            socket.onclose = () => {
+                logMessage("WebSocket closed");
+            };
+        };
+
+        document.getElementById('createSessionBtn').onclick = () => {
+            if (!socket) return;
+            socket.send(JSON.stringify({
+                action: "create_session",
+                player_name: "Alice"
+            }));
+        };
+
+        document.getElementById('joinSessionBtn').onclick = () => {
+            if (!socket) return;
+            const sId = prompt("Enter session ID:");
+            const pName = prompt("Enter your player name:");
+            socket.send(JSON.stringify({
+                action: "join_session",
+                session_id: sId,
+                player_name: pName
+            }));
+        };
+
+        document.getElementById('submitSnippetBtn').onclick = () => {
+            if (!socket) return;
+            const snippet = prompt("Enter your snippet (5 words, for example)");
+            socket.send(JSON.stringify({
+                action: "submit_snippet",
+                snippet
+            }));
+        };
+
+        document.getElementById('voteGoodBtn').onclick = () => {
+            if (!socket) return;
+            socket.send(JSON.stringify({
+                action: "submit_vote",
+                vote: "good"
+            }));
+        };
+        document.getElementById('voteBadBtn').onclick = () => {
+            if (!socket) return;
+            socket.send(JSON.stringify({
+                action: "submit_vote",
+                vote: "bad"
+            }));
+        };
+        document.getElementById('voteNeutralBtn').onclick = () => {
+            if (!socket) return;
+            socket.send(JSON.stringify({
+                action: "submit_vote",
+                vote: "neutral"
+            }));
+        };
+    </script>
+</body>
+
+</html>
