@@ -3,4 +3,4 @@
 ## Requirements
 pip install "fastapi[standard]"
 
-Create .env file and paste in 
+Create env file and paste in key
