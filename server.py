@@ -2,7 +2,6 @@ import uuid
 import random
 from typing import Dict, List
 from gamesession import GameSession, Player
-from promptgeneration import generate_prompt
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
 
@@ -62,8 +61,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     "player_id": player_id,
                     "message": f"New session {session_id} created, joined as {player_id}"
                 })
-
-            # 2. JOIN SESSION
+                
             elif action == "join_session":
                 session_id = data.get("session_id")
                 player_name = data.get("player_name", "Player")
@@ -158,8 +156,8 @@ async def websocket_endpoint(websocket: WebSocket):
                 # we wait for "submit_vote" from each player.
 
             # 5. SUBMIT_VOTE
-            elif action == "submit_vote":
-                # Expect: { "action": "submit_vote", "vote": "good"/"bad"/"neutral" }
+            elif action == "submit_votes":
+                # Expect: { "action": "submit_vote", voter_id: "some_id", votes: ["id", "id", "id"] }
                 if joined_session_id is None:
                     await websocket.send_json({
                         "event": "error",
@@ -168,23 +166,9 @@ async def websocket_endpoint(websocket: WebSocket):
                     continue
 
                 session = sessions[joined_session_id]
-                if not session.current_snippet:
-                    await websocket.send_json({
-                        "event": "error",
-                        "error": "No snippet to vote on."
-                    })
-                    continue
-
-                vote_value = data.get("vote", "")
-                if vote_value not in ["good", "bad", "neutral"]:
-                    await websocket.send_json({
-                        "event": "error",
-                        "error": "Vote value must be 'good', 'bad' or 'neutral'."
-                    })
-                    continue
 
                 # Record the vote
-                session.record_vote(player_id, vote_value)
+                session.record_vote(data.get("voter_id", data.get("votes")))
 
                 # Optionally broadcast "vote_received"
                 await broadcast_to_session(session, {
