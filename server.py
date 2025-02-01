@@ -88,6 +88,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 # Add this player to the session
                 player = Player(player_id, player_name, websocket)
                 session.add_player(player)
+                
                 joined_session_id = session_id
 
                 await websocket.send_json({
