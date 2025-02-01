@@ -1,6 +1,8 @@
 import uuid
 import random
 from typing import Dict, List
+from gamesession import GameSession, Player
+#from promptgeneration import generate_prompt
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
 
@@ -139,12 +141,111 @@ async def websocket_endpoint(websocket: WebSocket):
                     "current_turn_player": session.get_current_player_id()
                 })
 
+            # 4. SUBMIT_SNIPPET
+            elif action == "submit_snippet":
+                # Expect: { "action": "submit_snippet", "snippet": "some text" }
+                if joined_session_id is None:
+                    await websocket.send_json({
+                        "event": "error",
+                        "error": "You are not in a session."
+                    })
+                    continue
+
+                session = sessions[joined_session_id]
+
+                # Check if it's the current turn player's snippet
+                if session.get_current_player_id() != player_id:
+                    await websocket.send_json({
+                        "event": "error",
+                        "error": "It is not your turn to submit a snippet."
+                    })
+                    continue
+
+                snippet_text = data.get("snippet", "")
+                if not snippet_text:
+                    await websocket.send_json({
+                        "event": "error",
+                        "error": "Snippet text is empty."
+                    })
+                    continue
+
+                # Store the snippet in session
+                session.set_snippet(snippet_text, player_id)
+
+                # Broadcast snippet to everyone
+                await broadcast_to_session(session, {
+                    "event": "snippet_submitted",
+                    "player_id": player_id,
+                    "snippet_text": snippet_text
+                })
+
+                # Now, the other players can vote. We might not move the turn yet;
+                # we wait for "submit_vote" from each player.
+
+            # 5. SUBMIT_VOTE
+            elif action == "submit_vote":
+                # Expect: { "action": "submit_vote", "vote": "good"/"bad"/"neutral" }
+                if joined_session_id is None:
+                    await websocket.send_json({
+                        "event": "error",
+                        "error": "You are not in a session."
+                    })
+                    continue
+
+                session = sessions[joined_session_id]
+                if not session.current_snippet:
+                    await websocket.send_json({
+                        "event": "error",
+                        "error": "No snippet to vote on."
+                    })
+                    continue
+
+                vote_value = data.get("vote", "")
+                if vote_value not in ["good", "bad", "neutral"]:
+                    await websocket.send_json({
+                        "event": "error",
+                        "error": "Vote value must be 'good', 'bad' or 'neutral'."
+                    })
+                    continue
+
+                # Record the vote
+                session.record_vote(player_id, vote_value)
+
+                # Optionally broadcast "vote_received"
+                await broadcast_to_session(session, {
+                    "event": "vote_received",
+                    "voter_id": player_id,
+                    "vote_value": vote_value
+                })
+
+                # Check if all players have voted
+                if session.all_votes_in():
+                    tally = session.tally_votes_and_finalize()
+                    
+                    # Broadcast final results for this snippet
+                    await broadcast_to_session(session, {
+                        "event": "votes_finalized",
+                        "snippet_player_id": session.current_snippet["player_id"],
+                        "snippet_text": session.current_snippet["text"],
+                        "tally": tally
+                    })
+
+                    # In many games, after finalizing votes, we move to the next turn:
+                    session.next_turn()
+                    await broadcast_to_session(session, {
+                        "event": "turn_updated",
+                        "session_id": session.session_id,
+                        "current_turn_player": session.get_current_player_id()
+                    })
+
             else:
                 # Unrecognized action
                 await websocket.send_json({
                     "event": "error",
                     "error": "Unrecognized action"
                 })
+
+            
 
     except WebSocketDisconnect:
         # Handle disconnect — remove player from session, etc.

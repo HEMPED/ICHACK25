@@ -1,6 +1,17 @@
 # ICHACK25
 
-## Requirements
-pip install "fastapi[standard]"
+## Set up
 
-Create env file and paste in key
+Make sure conda is installed 
+
+To install all dependancies type the command:
+
+```
+conda env create -f env.yaml
+```
+
+Then to activate your environment type the following:
+
+```
+conda activate coe
+```
