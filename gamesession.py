@@ -54,13 +54,15 @@ class GameSession:
             self.voted[player] = False
         self.votes = {}
 
-    #TODO: acc implement proper voting system
+
     def record_vote(self, voter_id: str, vote_value: List[str]):
         # vote_value is a list of the other three player ids in order of preference
         if not self.voted[voter_id]:
             for i in range(3):
+                # Add 4 points for first choice, 3 for second, 2 for third, 1 for last
                 self.votes[vote_value[i]] += 4-i
             self.voted[voter_id] = True
+            
             
 
     def all_votes_in(self) -> bool:
@@ -69,6 +71,7 @@ class GameSession:
             if not self.voted[player]:
                 return False
 
+        self.reset_votes()
         return True
 
     def tally_votes_and_finalize(self):
