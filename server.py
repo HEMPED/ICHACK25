@@ -188,13 +188,6 @@ async def websocket_endpoint(websocket: WebSocket):
                         "tally": tally
                     })
 
-                    # In many games, after finalizing votes, we move to the next turn:
-                    session.next_turn()
-                    await broadcast_to_session(session, {
-                        "event": "turn_updated",
-                        "session_id": session.session_id,
-                        "current_turn_player": session.get_current_player_id()
-                    })
 
             else:
                 # Unrecognized action

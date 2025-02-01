@@ -2,6 +2,8 @@ import random
 from fastapi import  WebSocket
 from typing import List
 
+message = "Create a starting prompt for a version of madlibs where the blanks are the last few words of the sentence. Just a single sentence."
+
 class Player:
     def __init__(self, player_id: str, name: str, ws: WebSocket):
         self.player_id = player_id
@@ -17,7 +19,7 @@ class GameSession:
         self.story = ""  # The story so far
         self.votes = {}  # {player_id: score}
         self.voted = {}
-        self.snippet_results = []  # store results of past snippets if needed
+        self.snippet_results = {}  # {player_id: snippet}
 
     def add_player(self, player: Player):
         self.players[player.player_id] = player
@@ -53,6 +55,12 @@ class GameSession:
         for player in self.players:
             self.voted[player] = False
             self.votes[player] = 0
+        
+        self.snippet_results = {}
+            
+
+    def set_snippet(self, snippet: str, player_id: str):
+        self.snippet_results[player_id] = snippet
 
 
     def record_vote(self, voter_id: str, vote_value: List[str]):
@@ -83,5 +91,6 @@ class GameSession:
                 highest_score = self.votes[player]
                 winner = player
         
+        self.story += self.snippet_results[winner]
         return winner
 
