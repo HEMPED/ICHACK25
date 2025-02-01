@@ -61,7 +61,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     "player_id": player_id,
                     "message": f"New session {session_id} created, joined as {player_id}"
                 })
-                
+
             elif action == "join_session":
                 session_id = data.get("session_id")
                 player_name = data.get("player_name", "Player")
@@ -85,9 +85,14 @@ async def websocket_endpoint(websocket: WebSocket):
 
                 # Add this player to the session
                 player = Player(player_id, player_name, websocket)
-                session.add_player(player)
                 
                 joined_session_id = session_id
+
+                await broadcast_to_session(session, {
+                    "event": "player_joined",
+                    "player_id": player_id,
+                    "player_name": player_name
+                })
 
                 await websocket.send_json({
                     "event": "session_joined",
@@ -97,11 +102,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     "existing_players": [{"player_id": p.player_id, "player_name": p.name} for p in session.players.values()]
                 })
 
-                await broadcast_to_session(session, {
-                    "event": "player_joined",
-                    "player_id": player_id,
-                    "player_name": player_name
-                })
+                session.add_player(player)
 
                 # Check if session is full => start the game
                 if session.is_full() and not session.game_started:
@@ -203,13 +204,13 @@ async def websocket_endpoint(websocket: WebSocket):
                 session = sessions[joined_session_id]
 
                 # Record the vote
-                session.record_vote(data.get("voter_id", data.get("votes")))
+                session.record_vote(data.get("voter_id"), data.get("votes"))
 
                 # Optionally broadcast "vote_received"
                 await broadcast_to_session(session, {
                     "event": "vote_received",
                     "voter_id": player_id,
-                    "vote_value": vote_value
+                    "vote_value": data.get("votes")
                 })
 
                 # Check if all players have voted
@@ -219,8 +220,6 @@ async def websocket_endpoint(websocket: WebSocket):
                     # Broadcast final results for this snippet
                     await broadcast_to_session(session, {
                         "event": "votes_finalized",
-                        "snippet_player_id": session.current_snippet["player_id"],
-                        "snippet_text": session.current_snippet["text"],
                         "tally": tally
                     })
 

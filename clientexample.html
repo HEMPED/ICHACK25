@@ -20,6 +20,7 @@
         let socket = null;
         let sessionId = null;
         let playerId = null;
+        let otherPlayersIds = [];
         let otherPlayersNames = [];
         let voteBuffer = [];
 
@@ -48,7 +49,8 @@
                     case "session_joined":
                         sessionId = data.session_id;
                         playerId = data.player_id;
-                        if (data.players) otherPlayersIds = Object.keys(data.players.keys());
+                        if (data.existing_players) otherPlayersIds = data.existing_players.map(p => p.player_id);
+                        console.log(otherPlayersIds);
                         break;
                     case "player_joined":
                         otherPlayersIds.push(data.player_id);
@@ -135,6 +137,7 @@
         document.getElementById('voteP2').onclick = () => {
             // If player has already been voted for, do nothing
             if (voteBuffer.includes(otherPlayersIds[1])) return;
+            console.log(otherPlayersIds[1]);
             // Otherwise add to vote buffer
             voteBuffer.push(otherPlayersIds[1]);
             
