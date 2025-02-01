@@ -61,8 +61,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     "player_id": player_id,
                     "message": f"New session {session_id} created, joined as {player_id}"
                 })
-
-            # 2. JOIN SESSION
+                
             elif action == "join_session":
                 session_id = data.get("session_id")
                 player_name = data.get("player_name", "Player")
@@ -87,14 +86,15 @@ async def websocket_endpoint(websocket: WebSocket):
                 # Add this player to the session
                 player = Player(player_id, player_name, websocket)
                 session.add_player(player)
+                
                 joined_session_id = session_id
 
                 await websocket.send_json({
                     "event": "session_joined",
                     "session_id": session_id,
                     "player_id": player_id,
-                    "players" : session.players,
-                    "message": f"Joined session {session_id} as {player_id}"
+                    "message": f"Joined session {session_id} as {player_id}",
+                    "existing_players": [{"player_id": p.player_id, "player_name": p.name} for p in session.players.values()]
                 })
 
                 await broadcast_to_session(session, {
@@ -112,6 +112,7 @@ async def websocket_endpoint(websocket: WebSocket):
                         "turn_order": session.turn_order,
                         "current_turn_player": session.get_current_player_id()
                     })
+
 
             # 3. (Optional) NEXT TURN (Example of how you might move the turn)
             elif action == "next_turn":

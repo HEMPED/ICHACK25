@@ -20,7 +20,6 @@
         let socket = null;
         let sessionId = null;
         let playerId = null;
-        let otherPlayersIds = [];
         let otherPlayersNames = [];
         let voteBuffer = [];
 
@@ -49,6 +48,7 @@
                     case "session_joined":
                         sessionId = data.session_id;
                         playerId = data.player_id;
+                        if (data.players) otherPlayersIds = Object.keys(data.players.keys());
                         break;
                     case "player_joined":
                         otherPlayersIds.push(data.player_id);
