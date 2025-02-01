@@ -11,15 +11,18 @@
     <button id="createSessionBtn">Create Session</button>
     <button id="joinSessionBtn">Join Session</button>
     <button id="submitSnippetBtn">Submit Snippet</button>
-    <button id="voteGoodBtn">Vote Good</button>
-    <button id="voteBadBtn">Vote Bad</button>
-    <button id="voteNeutralBtn">Vote Neutral</button>
+    <button id="voteP1">Vote Player 1</button>
+    <button id="voteP2">Vote Player 2</button>
+    <button id="voteP3">Vote Player 3</button>
     <div id="logs"></div>
 
     <script>
         let socket = null;
         let sessionId = null;
         let playerId = null;
+        let otherPlayersIds = [];
+        let otherPlayersNames = [];
+        let voteBuffer = [];
 
         const logsDiv = document.getElementById('logs');
         const logMessage = (msg) => {
@@ -46,6 +49,12 @@
                     case "session_joined":
                         sessionId = data.session_id;
                         playerId = data.player_id;
+                        if (data.existing_players) otherPlayersIds = data.existing_players.map(p => p.player_id);
+                        console.log(otherPlayersIds);
+                        break;
+                    case "player_joined":
+                        otherPlayersIds.push(data.player_id);
+                        otherPlayersNames.push(data.player_name);
                         break;
                     case "game_started":
                         logMessage("Game started. Turn order: " + data.turn_order);
@@ -104,26 +113,68 @@
             }));
         };
 
-        document.getElementById('voteGoodBtn').onclick = () => {
+        document.getElementById('voteP1').onclick = () => {
+            // If player has already been voted for, do nothing
+            if (voteBuffer.includes(otherPlayersIds[0])) return;
+            // Otherwise add to vote buffer
+            voteBuffer.push(otherPlayersIds[0]);
+            
             if (!socket) return;
-            socket.send(JSON.stringify({
-                action: "submit_vote",
-                vote: "good"
-            }));
+
+            console.log(voteBuffer.length, otherPlayersIds.length);
+
+            // If all three votes cast, send to server
+            if (voteBuffer.length === otherPlayersIds.length) {
+                socket.send(JSON.stringify({
+                    action: "submit_votes",
+                    voter_id: playerId,
+                    votes: voteBuffer
+                }));
+                voteBuffer = [];
+            }
         };
-        document.getElementById('voteBadBtn').onclick = () => {
+
+        document.getElementById('voteP2').onclick = () => {
+            // If player has already been voted for, do nothing
+            if (voteBuffer.includes(otherPlayersIds[1])) return;
+            console.log(otherPlayersIds[1]);
+            // Otherwise add to vote buffer
+            voteBuffer.push(otherPlayersIds[1]);
+            
             if (!socket) return;
-            socket.send(JSON.stringify({
-                action: "submit_vote",
-                vote: "bad"
-            }));
+
+            console.log(voteBuffer.length, otherPlayersIds.length);
+
+            // If all three votes cast, send to server
+            if (voteBuffer.length === otherPlayersIds.length) {
+                socket.send(JSON.stringify({
+                    action: "submit_votes",
+                    voter_id: playerId,
+                    votes: voteBuffer
+                }));
+                voteBuffer = [];
+            }
         };
-        document.getElementById('voteNeutralBtn').onclick = () => {
+
+        document.getElementById('voteP3').onclick = () => {
+            // If player has already been voted for, do nothing
+            if (voteBuffer.includes(otherPlayersIds[2])) return;
+            // Otherwise add to vote buffer
+            voteBuffer.push(otherPlayersIds[2]);
+            
             if (!socket) return;
-            socket.send(JSON.stringify({
-                action: "submit_vote",
-                vote: "neutral"
-            }));
+
+            // If all three votes cast, send to server
+            console.log(voteBuffer.length, otherPlayersIds.length);
+            
+            if (voteBuffer.length === otherPlayersIds.length) {
+                socket.send(JSON.stringify({
+                    action: "submit_votes",
+                    voter_id: playerId,
+                    votes: voteBuffer
+                }));
+                voteBuffer = [];
+            }
         };
     </script>
 </body>
