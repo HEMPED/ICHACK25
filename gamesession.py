@@ -1,5 +1,6 @@
 import random
 from fastapi import  WebSocket
+from typing import List
 
 class Player:
     def __init__(self, player_id: str, name: str, ws: WebSocket):
