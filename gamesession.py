@@ -52,16 +52,17 @@ class GameSession:
     def reset_votes(self):
         for player in self.players:
             self.voted[player] = False
-        self.votes = {}
+            self.votes[player] = 0
 
 
     def record_vote(self, voter_id: str, vote_value: List[str]):
         # vote_value is a list of the other three player ids in order of preference
+        print(voter_id)
         if not self.voted[voter_id]:
             for i in range(3):
-                # Add 4 points for first choice, 3 for second, 2 for third, 1 for last
-                self.votes[vote_value[i]] += 4-i
+                self.votes[vote_value[i]] += 3-i
             self.voted[voter_id] = True
+        print(self.votes)
             
             
 
