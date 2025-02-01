@@ -1,4 +1,15 @@
+"use client"
+
+import { useRouter } from 'next/navigation';
+
 export default function Home() {
+  const router = useRouter();
+
+  const handleCreateGame = () => {
+    router.push('/game'); // Change to your target page
+  };
+
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-900 text-white">
       <div className="bg-gray-800 p-8 rounded-2xl shadow-lg w-96">
@@ -15,7 +26,9 @@ export default function Home() {
           <div className="flex items-center justify-center">
             <span className="text-gray-400">or</span>
           </div>
-          <button className="w-full p-2 bg-green-600 hover:bg-green-500 rounded-lg font-semibold">
+          <button className="w-full p-2 bg-green-600 hover:bg-green-500 rounded-lg font-semibold"
+            onClick={handleCreateGame}
+          >
             Create Game
           </button>
         </div>
