@@ -2,9 +2,9 @@ import uuid
 import random
 from typing import Dict, List
 from gamesession import GameSession, Player
-from promptgeneration import generate_prompt
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
+from promptgeneration import PromptGenerator
 
 app = FastAPI()
 
@@ -63,7 +63,6 @@ async def websocket_endpoint(websocket: WebSocket):
                     "message": f"New session {session_id} created, joined as {player_id}"
                 })
 
-            # 2. JOIN SESSION
             elif action == "join_session":
                 session_id = data.get("session_id")
                 player_name = data.get("player_name", "Player")
@@ -85,11 +84,16 @@ async def websocket_endpoint(websocket: WebSocket):
                     })
                     continue
 
-                # Add this player to the session
+
                 player = Player(player_id, player_name, websocket)
-                session.add_player(player)
                 
                 joined_session_id = session_id
+
+                await broadcast_to_session(session, {
+                    "event": "player_joined",
+                    "player_id": player_id,
+                    "player_name": player_name
+                })
 
                 await websocket.send_json({
                     "event": "session_joined",
@@ -99,11 +103,8 @@ async def websocket_endpoint(websocket: WebSocket):
                     "existing_players": [{"player_id": p.player_id, "player_name": p.name} for p in session.players.values()]
                 })
 
-                await broadcast_to_session(session, {
-                    "event": "player_joined",
-                    "player_id": player_id,
-                    "player_name": player_name
-                })
+                session.add_player(player)
+                print("Player joined session", session_id)
 
                 # Check if session is full => start the game
                 if session.is_full() and not session.game_started:
@@ -111,8 +112,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     await broadcast_to_session(session, {
                         "event": "game_started",
                         "session_id": session.session_id,
-                        "turn_order": session.turn_order,
-                        "current_turn_player": session.get_current_player_id()
+                        "starting_prompt": session.starting_prompt
                     })
 
 
@@ -128,14 +128,6 @@ async def websocket_endpoint(websocket: WebSocket):
 
                 session = sessions[joined_session_id]
 
-                # Check if it's the current turn player's snippet
-                if session.get_current_player_id() != player_id:
-                    await websocket.send_json({
-                        "event": "error",
-                        "error": "It is not your turn to submit a snippet."
-                    })
-                    continue
-
                 snippet_text = data.get("snippet", "")
                 if not snippet_text:
                     await websocket.send_json({
@@ -145,21 +137,24 @@ async def websocket_endpoint(websocket: WebSocket):
                     continue
 
                 # Store the snippet in session
-                session.set_snippet(snippet_text, player_id)
+                all_snippets_in = session.set_snippet(snippet_text, player_id)
 
-                # Broadcast snippet to everyone
-                await broadcast_to_session(session, {
+                await websocket.send_json({
                     "event": "snippet_submitted",
-                    "player_id": player_id,
-                    "snippet_text": snippet_text
+                    "message": "Snippet submitted successfully."
                 })
 
-                # Now, the other players can vote. We might not move the turn yet;
-                # we wait for "submit_vote" from each player.
+                if all_snippets_in:
+                    # Broadcast snippet to everyone
+                    await broadcast_to_session(session, {
+                        "event": "all_snippets_submitted",
+                        "snippets": session.snippet_results
+                    })
+
 
             # 5. SUBMIT_VOTE
-            elif action == "submit_vote":
-                # Expect: { "action": "submit_vote", "vote": "good"/"bad"/"neutral" }
+            elif action == "submit_votes":
+                # Expect: { "action": "submit_vote", voter_id: "some_id", votes: ["id", "id", "id"] }
                 if joined_session_id is None:
                     await websocket.send_json({
                         "event": "error",
@@ -168,50 +163,29 @@ async def websocket_endpoint(websocket: WebSocket):
                     continue
 
                 session = sessions[joined_session_id]
-                if not session.current_snippet:
-                    await websocket.send_json({
-                        "event": "error",
-                        "error": "No snippet to vote on."
-                    })
-                    continue
-
-                vote_value = data.get("vote", "")
-                if vote_value not in ["good", "bad", "neutral"]:
-                    await websocket.send_json({
-                        "event": "error",
-                        "error": "Vote value must be 'good', 'bad' or 'neutral'."
-                    })
-                    continue
 
                 # Record the vote
-                session.record_vote(player_id, vote_value)
+                session.record_vote(data.get("voter_id"), data.get("votes"))
 
                 # Optionally broadcast "vote_received"
                 await broadcast_to_session(session, {
                     "event": "vote_received",
                     "voter_id": player_id,
-                    "vote_value": vote_value
+                    "vote_value": data.get("votes")
                 })
 
                 # Check if all players have voted
                 if session.all_votes_in():
-                    tally = session.tally_votes_and_finalize()
+                    winning_snippet = session.tally_votes_and_finalize()
                     
                     # Broadcast final results for this snippet
                     await broadcast_to_session(session, {
                         "event": "votes_finalized",
-                        "snippet_player_id": session.current_snippet["player_id"],
-                        "snippet_text": session.current_snippet["text"],
-                        "tally": tally
+                        "winning_snippet": winning_snippet
                     })
 
-                    # In many games, after finalizing votes, we move to the next turn:
-                    session.next_turn()
-                    await broadcast_to_session(session, {
-                        "event": "turn_updated",
-                        "session_id": session.session_id,
-                        "current_turn_player": session.get_current_player_id()
-                    })
+                    session.reset_votes()
+
 
             else:
                 # Unrecognized action
