@@ -44,6 +44,7 @@ export default function Home() {
       return;
     }
     sendMessage({ action: "join_session", session_id: gameCode, player_name: playerName });
+    router.push(`/lobby?sessionId=${gameCode}`);
   };
 
   return (

@@ -39,8 +39,9 @@ export default function Lobby() {
             if (players[4] !== "") {
                 router.push(`/game?sessionId=${latestMessage.session_id}`);
             }
-        } else if (latestMessage.event === "session_joined") {
+        } else if (latestMessage.event === "session_joined" && messages.length != 1) {
             var newPlayers = latestMessage.existing_players.map((player: any) => player.player_name || "");
+            newPlayers.push(latestMessage.player_name);
             if (newPlayers.length === 5) {
                 router.push(`/game?sessionId=${latestMessage.session_id}`);
             } else {
