@@ -107,6 +107,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     "event": "session_joined",
                     "session_id": session_id,
                     "player_id": player_id,
+                    "player_name": player_name,
                     "message": f"Joined session {session_id} as {player_id}",
                     "existing_players": [{"player_id": p.player_id, "player_name": p.name} for p in session.players.values()]
                 })
