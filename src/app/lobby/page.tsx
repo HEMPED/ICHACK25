@@ -61,7 +61,7 @@ export default function Lobby() {
                 console.log("Players:", players);
                 newPlayers = [];
             } else if (latestMessage.event === "game_started") {
-                router.push(`/game?sessionId=${latestMessage.session_id}&?startingPrompt=${latestMessage.starting_prompt}`);
+                router.push(`/game?sessionId=${latestMessage.session_id}&startingPrompt=${latestMessage.starting_prompt}`);
             }
         }
     }, [messages]);
