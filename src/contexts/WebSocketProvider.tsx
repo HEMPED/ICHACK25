@@ -13,7 +13,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [ws, setWs] = useState<WebSocket | null>(null);
   const [messages, setMessages] = useState<any[]>([]);
   const [retryCount, setRetryCount] = useState(0);
-  const url = "ws:172.20.10.2:8000/ws";
+  const url = "ws:172.30.181.229:8000/ws";
 
   useEffect(() => {
     if (!ws) {
