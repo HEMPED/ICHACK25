@@ -166,6 +166,12 @@ async def websocket_endpoint(websocket: WebSocket):
                         "snippets": session.snippet_results
                     })
 
+            elif action == "get_player_id":
+                await websocket.send_json({
+                    "event": "player_id",
+                    "player_id": player_id
+                })
+
 
             # 5. SUBMIT_VOTE
             elif action == "submit_votes":
