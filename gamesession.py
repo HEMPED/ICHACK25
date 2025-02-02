@@ -3,7 +3,7 @@ from fastapi import  WebSocket
 from typing import List
 from promptgeneration import PromptGenerator
 
-message = "Create a starting prompt for a version of madlibs where the blanks are the last few words of the sentence. Just a single sentence."
+message = "Create a starting prompt for a version of madlibs where the blanks are the last few words of the sentence. Just a single SHORT sentence. DO NOT END WITH A ___. AT THE END"
 
 class Player:
     def __init__(self, player_id: str, name: str, ws: WebSocket):
