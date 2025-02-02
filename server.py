@@ -100,7 +100,8 @@ async def websocket_endpoint(websocket: WebSocket):
                 await broadcast_to_session(session, {
                     "event": "player_joined",
                     "player_id": player_id,
-                    "player_name": player_name
+                    "player_name": player_name,
+                    "existing_players": [{"player_id": p.player_id, "player_name": p.name} for p in session.players.values()]
                 })
 
                 await websocket.send_json({

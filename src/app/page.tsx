@@ -18,6 +18,9 @@ export default function Home() {
         console.log("✅ Session created:", latestMessage.session_id);
         // join the session
         sendMessage({ action: "join_session", session_id: latestMessage.session_id, player_name: playerName });
+      }
+      else if (latestMessage.event === "session_joined") {
+        console.log("✅ Session joined:", latestMessage.session_id);
         router.push(`/lobby?sessionId=${latestMessage.session_id}`);
       }
     }
@@ -44,7 +47,7 @@ export default function Home() {
       return;
     }
     sendMessage({ action: "join_session", session_id: gameCode, player_name: playerName });
-    router.push(`/lobby?sessionId=${gameCode}`);
+    // router.push(`/lobby?sessionId=${gameCode}`);
   };
 
   return (
