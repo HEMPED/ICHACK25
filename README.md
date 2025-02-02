@@ -15,3 +15,13 @@ Then to activate your environment type the following:
 ```
 conda activate coe
 ```
+
+make sure node (and npm) is installed
+
+```
+npm i
+```
+
+```
+npm run dev
+```

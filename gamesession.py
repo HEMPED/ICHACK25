@@ -3,26 +3,30 @@ from fastapi import  WebSocket
 from typing import List
 from promptgeneration import PromptGenerator
 
-message = "Create a starting prompt for a version of madlibs where the blanks are the last few words of the sentence. Just a single sentence."
+message = "Create a starting prompt for a version of madlibs where the blanks are the last few words of the sentence. Just a single SHORT sentence. DO NOT END WITH A FULL STOP AT THE END OR ANY OTHER PUNCTUATION INCLUDING UNDERSCORES. I WILL KILL YOUR CAT IF YOU GIVE ME UNDERSCORES."
+message2 = "Continue this story for one other short sentence. Remove the final few words of the second sentence. ONLY RETURN THE SECOND SENTENCE WITH THE LAST FEW WORDS TAKEN OFF THE END. DO NOT END WITH A FULL STOP OR I KILL YOUR CAT."
 
 class Player:
     def __init__(self, player_id: str, name: str, ws: WebSocket):
         self.player_id = player_id
         self.name = name
         self.websocket = ws
+        self.score = 0
 
 class GameSession:
     def __init__(self, session_id: str):
         self.session_id = session_id
         self.players: dict[str, Player] = {}
         self.game_started = False
-        self.rounds = 6
+        self.rounds = 4
 
         self.story = ""  # The story so far
         self.votes = {}  # {player_id: score}
         self.voted = {}
         self.snippet_results = {}  # {player_id: snippet}
-        self.starting_prompt = PromptGenerator().generate_prompt(message)
+        temp = PromptGenerator().generate_prompt(message)
+        print(temp)
+        self.starting_prompt = temp
 
     def add_player(self, player: Player):
         self.players[player.player_id] = player
@@ -41,6 +45,9 @@ class GameSession:
         all_player_ids = list(self.players.keys())
         random.shuffle(all_player_ids)
         self.game_started = True
+
+    def get_player_name(self, pid) -> List[str]:
+        return self.players[pid].name
 
     def get_current_player_id(self) -> str:
         return self.turn_order[self.current_turn_index] if self.game_started else ""
@@ -70,6 +77,21 @@ class GameSession:
             return True
         else:
             return False
+        
+    def get_winning_votees(self):
+        all_players = list(self.players.values())
+
+        # Sort by score descending
+        sorted_players = sorted(all_players, key=lambda p: p.score, reverse=True)
+
+        # Slice the top 3
+        top_three = sorted_players[:3]
+        print(top_three)
+        # filter top three to only include player names and scores
+        top_three = [(p.name, p.score) for p in top_three]
+        return top_three
+
+
 
 
     def record_vote(self, voter_id: str, vote_value: List[str]):
@@ -105,9 +127,14 @@ class GameSession:
         highest_score = 0
         winner = ""
         for player in self.players:
+            self.players[player].score += self.votes[player]
             if self.votes[player] > highest_score:
                 highest_score = self.votes[player]
                 winner = player
         
         self.story += self.snippet_results[winner]
+        # if self.rounds > 0:
+        #     temp = PromptGenerator().generate_prompt("'" + self.story + "': \t" + message2)
+        #     print(temp)
+        #     self.starting_prompt = self.starting_prompt + temp
         return self.snippet_results[winner]
