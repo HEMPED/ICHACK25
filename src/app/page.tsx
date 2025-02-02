@@ -22,7 +22,9 @@ export default function Home() {
       else if (latestMessage.event === "session_joined") {
         console.log("✅ Session joined:", latestMessage.session_id);
         router.push(`/lobby?sessionId=${latestMessage.session_id}`);
-      }
+      } else if (latestMessage.event === "game_started") {
+        router.push(`/game?sessionId=${latestMessage.session_id}&startingPrompt=${latestMessage.starting_prompt}`);
+      } 
     }
   }, [messages, router]);
 

@@ -10,14 +10,60 @@ import { useSearchParams } from 'next/navigation'
 export default function Lobby() {
     const searchParams = useSearchParams()
     const router = useRouter();
-    const { messages } = useWebSocket();
+    const { messages, sendMessage } = useWebSocket();
     const [serverMessage, setServerMessage] = useState<string | null>(null);
-    const [show, setShow] = useState(false);
+    const [waiting, setWaiting] = useState(true);
     const [players, setPlayers] = useState<string[]>(Array(5).fill(""));
     const [lobbyId, setLobbyId] = useState<string | null>("PLACEHOLDER");
 
+    
+
     // Listen for WebSocket messages
     useEffect(() => {
+        if (lobbyId == "PLACEHOLDER") {
+            setLobbyId(searchParams.get('sessionId'));
+        }
+        if (waiting) {
+            if (messages.length > 0) {
+                const latestMessage = messages[messages.length - 1];
+                if (latestMessage.event === "existing_sessions") {
+                    var np = players;
+                    for (let i = 0; i < latestMessage.players.length; i++) {
+                        np[i] = latestMessage.players[i].player_name;
+                    }
+                    setPlayers(np);
+                    setWaiting(false);
+                } else if (latestMessage.event === "game_started") {
+                    router.push(`/game?sessionId=${latestMessage.session_id}&startingPrompt=${latestMessage.starting_prompt}`);
+                } else {
+                    sendMessage({ action: "get_existing_players" });
+                }
+            } else {
+                sendMessage({ action: "get_existing_players" });
+            }
+        }
+        if (messages.length > 0 && !waiting) {
+            const latestMessage = messages[messages.length - 1];
+            console.log("📩 Received:", latestMessage, latestMessage.event);
+            
+            if (latestMessage.event === "player_joined") {
+                console.log("Player joined:", latestMessage.player_name);
+                var newPlayers = [...players];   
+                console.log("Players:", players);
+                for (let i = 0; i < newPlayers.length; i++) {
+                    console.log(newPlayers[i]);
+                    if (newPlayers[i] === '') {
+                        newPlayers[i] = latestMessage.player_name;
+                        break;
+                    }
+                }
+                setPlayers(newPlayers);
+                console.log("Players:", players);
+                newPlayers = [];
+            } else if (latestMessage.event === "game_started") {
+                router.push(`/game?sessionId=${latestMessage.session_id}&?startingPrompt=${latestMessage.starting_prompt}`);
+            }
+        }
     }, [messages]);
 
     return (
@@ -31,7 +77,7 @@ export default function Lobby() {
     <div className="text-2xl font-bold text-gray-200 text-center">
         Lobby - Waiting for Players <br /> {lobbyId}
     </div>
-    <div className="w-full max-w-md space-y-2">
+    <div className="w-full max-w-md space-y-2" >
         {players.map((player, index) => (
         <motion.div
             key={index}
