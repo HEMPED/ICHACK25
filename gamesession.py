@@ -18,7 +18,7 @@ class GameSession:
         self.session_id = session_id
         self.players: dict[str, Player] = {}
         self.game_started = False
-        self.rounds = 4
+        self.rounds = 2
 
         self.story = ""  # The story so far
         self.votes = {}  # {player_id: score}
