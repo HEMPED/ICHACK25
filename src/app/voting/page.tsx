@@ -25,24 +25,29 @@ export default function VotingPage() {
   const [votes, setVotes] = useState<PlayerSnippet[]>([]);
   const [submitted, setSubmitted] = useState(false);
   const [waiting, setWaiting] = useState(true);
+  const [snippetsreceived, setSnippetsReceived] = useState(false);
 
   useEffect(() => {
     const promptParam = searchParams.get("starting_prompt") || "";
     setStartingPrompt(promptParam);
 
     // Check if we're still waiting for snippet data
+    if (!snippetsreceived) {
+      if (messages.length > 0) {
+        const latestMessage = messages[messages.length - 1];
+        if (latestMessage.event === "all_snippets_submitted") {
+          const snippetsDict: SnippetDict = latestMessage.snippets;
+          const snippetsArr = Object.entries(snippetsDict).map(([id, text]) => ({ id, text }));
+          setSnippets(snippetsArr);
+          setSnippetsReceived(true);
+        }
+      }
+    }
+
     if (waiting) {
       if (messages.length > 0) {
         const latestMessage = messages[messages.length - 1];
-
-        if (latestMessage.event === "all_snippets_submitted") {
-          const m = latestMessage.snippets as SnippetDict;
-          console.log("📩 Received:", m);
-
-          const newSnippets = Object.entries(m).map(([id, text]) => ({ id, text }));
-          setSnippets(newSnippets);
-        }
-        else if (latestMessage.event === "player_id") {
+        if (latestMessage.event === "player_id") {
           // Remove this player's own snippet (since they shouldn't vote on themselves)
           const playerId = latestMessage.player_id;
           const updatedSnippets = [...snippets].filter(snip => snip.id !== playerId);
@@ -101,7 +106,7 @@ export default function VotingPage() {
       </AnimatePresence>
 
       {/* Show a loading message/spinner while waiting */}
-      {waiting && !submitted && (
+      {waiting && snippetsreceived && (
         <motion.h2
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -113,7 +118,7 @@ export default function VotingPage() {
       )}
 
       {/* Show voting UI only if not waiting and not submitted */}
-      {!waiting && !submitted && (
+      {!waiting && snippetsreceived && (
         <>
           <motion.h1
             initial={{ opacity: 0, y: -20 }}
