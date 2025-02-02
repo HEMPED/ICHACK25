@@ -16,10 +16,10 @@ export default function SubmissionPage() {
   const [submitted, setSubmitted] = useState(false);
   // Get prompt from URL params
   useEffect(() => {
-    const promptFromParams = searchParams.get("startingPrompt") || "";
+    const promptFromParams = (searchParams.get("startingPrompt") || "");
     setStartingPrompt(promptFromParams);
     if (messages.length > 0) {
-      const latestMessage = messages[messages.length - 1];
+      var latestMessage = messages[messages.length - 1];
       if (latestMessage.event === "all_snippets_submitted") {
         // The server sends a dictionary like:
         // { "player1ID": "some snippet", "player2ID": "another snippet", ... }
@@ -77,7 +77,7 @@ export default function SubmissionPage() {
         <>
           {/* Animated Heading */}
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-6 px-4">
-            {startingPrompt}
+            {startingPrompt + " ___"}
           </h1>
 
           {/* Input and Button Section */}

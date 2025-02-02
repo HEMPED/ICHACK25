@@ -6,6 +6,8 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
 from promptgeneration import PromptGenerator
 
+from comicmaker import make_2x2_collage
+
 app = FastAPI()
 
 # -----------------------------------------------------------
@@ -208,11 +210,24 @@ async def websocket_endpoint(websocket: WebSocket):
                     session.reset_votes()
 
                     if session.rounds == 0:
+
                         await broadcast_to_session(session, {
                             "event": "game_over",
-                            "message": "Game over!"
+                            "message": "Game over!",
                         })
 
+                        make_2x2_collage(session.story)
+
+
+
+
+
+            elif action ==  "get_winning_votees":
+                        winners = session.get_winning_votees()
+                        await websocket.send_json({
+                            "event": "winning_votees",
+                            "winners": winners
+                        })
                         session.reset_game()
 
 
