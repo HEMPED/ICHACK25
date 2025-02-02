@@ -168,7 +168,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 session.record_vote(player_id, data.get("votes"))
 
                 # Optionally broadcast "vote_received"
-                await websocket.send_json(session, {
+                await broadcast_to_session(session, {
                     "event": "vote_received",
                     "voter_id": player_id,
                     "vote_value": data.get("votes")
