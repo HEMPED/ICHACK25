@@ -125,6 +125,11 @@ async def websocket_endpoint(websocket: WebSocket):
                         "starting_prompt": session.starting_prompt
                     })
 
+            elif action == "get_existing_players":
+                await websocket.send_json({
+                    "event": "existing_sessions",
+                    "players": [{"player_id": p.player_id, "player_name": p.name} for p in session.players.values()]
+                })
 
             # 4. SUBMIT_SNIPPET
             elif action == "submit_snippet":
