@@ -16,6 +16,7 @@ class GameSession:
         self.session_id = session_id
         self.players: dict[str, Player] = {}
         self.game_started = False
+        self.rounds = 6
 
         self.story = ""  # The story so far
         self.votes = {}  # {player_id: score}
@@ -31,7 +32,7 @@ class GameSession:
             del self.players[player_id]
 
     def is_full(self) -> bool:
-        return len(self.players) == 4
+        return len(self.players) == 5
 
     def start_game(self):
         """Randomly assign turn order and mark game as started."""
@@ -65,7 +66,7 @@ class GameSession:
             self.snippet_results[player_id] = snippet
         
         #check if all players have submitted a snippet
-        if len(self.snippet_results) == 4:
+        if len(self.snippet_results) == 5:
             return True
         else:
             return False
@@ -75,12 +76,21 @@ class GameSession:
         # vote_value is a list of the other three player ids in order of preference
         print(voter_id)
         if not self.voted[voter_id]:
-            for i in range(3):
-                self.votes[vote_value[i]] += 3-i
+            for i in range(4):
+                self.votes[vote_value[i]] += 4-i
             self.voted[voter_id] = True
         print(self.votes)
             
             
+
+    def reset_game(self):
+        self.game_started = False
+        self.story = ""
+        self.reset_votes()
+        self.snippet_results = {}
+        self.starting_prompt = PromptGenerator().generate_prompt(message)
+
+    
 
     def all_votes_in(self) -> bool:
         # Returns true once all players have voted
@@ -88,6 +98,7 @@ class GameSession:
             if not self.voted[player]:
                 return False
 
+        self.rounds -= 1
         return True
 
     def tally_votes_and_finalize(self):

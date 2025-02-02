@@ -14,6 +14,8 @@
     <button id="voteP1">Vote Player 1</button>
     <button id="voteP2">Vote Player 2</button>
     <button id="voteP3">Vote Player 3</button>
+    <button id="voteP4">Vote Player 4</button>
+
     <div id="logs"></div>
 
     <script>
@@ -31,7 +33,7 @@
 
         document.getElementById('connectBtn').onclick = () => {
             // Connect to your FastAPI WebSocket server
-            socket = new WebSocket("ws://127.0.0.1:8000/ws");
+            socket = new WebSocket("ws://172.30.187.106:8000/ws");
 
             socket.onopen = () => {
                 logMessage("WebSocket connected!");
@@ -118,7 +120,7 @@
             if (voteBuffer.includes(otherPlayersIds[0])) return;
             // Otherwise add to vote buffer
             voteBuffer.push(otherPlayersIds[0]);
-            
+
             if (!socket) return;
 
             console.log(voteBuffer.length, otherPlayersIds.length);
@@ -140,7 +142,7 @@
             console.log(otherPlayersIds[1]);
             // Otherwise add to vote buffer
             voteBuffer.push(otherPlayersIds[1]);
-            
+
             if (!socket) return;
 
             console.log(voteBuffer.length, otherPlayersIds.length);
@@ -161,12 +163,33 @@
             if (voteBuffer.includes(otherPlayersIds[2])) return;
             // Otherwise add to vote buffer
             voteBuffer.push(otherPlayersIds[2]);
-            
+
             if (!socket) return;
 
             // If all three votes cast, send to server
             console.log(voteBuffer.length, otherPlayersIds.length);
-            
+
+            if (voteBuffer.length === otherPlayersIds.length) {
+                socket.send(JSON.stringify({
+                    action: "submit_votes",
+                    voter_id: playerId,
+                    votes: voteBuffer
+                }));
+                voteBuffer = [];
+            }
+        };
+
+        document.getElementById('voteP4').onclick = () => {
+            // If player has already been voted for, do nothing
+            if (voteBuffer.includes(otherPlayersIds[3])) return;
+            // Otherwise add to vote buffer
+            voteBuffer.push(otherPlayersIds[3]);
+
+            if (!socket) return;
+
+            // If all three votes cast, send to server
+            console.log(voteBuffer.length, otherPlayersIds.length);
+
             if (voteBuffer.length === otherPlayersIds.length) {
                 socket.send(JSON.stringify({
                     action: "submit_votes",

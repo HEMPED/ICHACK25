@@ -18,6 +18,8 @@ sessions: Dict[str, GameSession] = {}
 # WEBSOCKET COMMUNICATION
 # -----------------------------------------------------------
 
+session_keys = sessions.keys()
+
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     """
@@ -27,6 +29,8 @@ async def websocket_endpoint(websocket: WebSocket):
       3) Broadcasting messages when session fills up (4 players) and starts
     """
     await websocket.accept()
+
+
     player_id = str(uuid.uuid4())  # A unique ID for this connection
     
     # We’ll keep track of which session_id a player joined.
@@ -46,7 +50,11 @@ async def websocket_endpoint(websocket: WebSocket):
 
             # 1. CREATE SESSION
             if action == "create_session":
-                session_id = str(uuid.uuid4())
+                #generate random 5 letter string made of only letters
+                session_id = ''.join(random.choices('ABCDEFGHIJKLMNOPQRSTUVWXYZ', k=5))
+                while session_id in session_keys:
+                    session_id = ''.join(random.choices('ABCDEFGHIJKLMNOPQRSTUVWXYZ', k=5))
+                session_id = session_id
                 new_session = GameSession(session_id)
                 sessions[session_id] = new_session
 
@@ -165,7 +173,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 session = sessions[joined_session_id]
 
                 # Record the vote
-                session.record_vote(data.get("voter_id"), data.get("votes"))
+                session.record_vote(player_id, data.get("votes"))
 
                 # Optionally broadcast "vote_received"
                 await broadcast_to_session(session, {
@@ -185,6 +193,14 @@ async def websocket_endpoint(websocket: WebSocket):
                     })
 
                     session.reset_votes()
+
+                    if session.rounds == 0:
+                        await broadcast_to_session(session, {
+                            "event": "game_over",
+                            "message": "Game over!"
+                        })
+
+                        session.reset_game()
 
 
             else:
