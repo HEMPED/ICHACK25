@@ -194,6 +194,14 @@ async def websocket_endpoint(websocket: WebSocket):
 
                     session.reset_votes()
 
+                    if session.rounds == 0:
+                        await broadcast_to_session(session, {
+                            "event": "game_over",
+                            "message": "Game over!"
+                        })
+
+                        session.reset_game()
+
 
             else:
                 # Unrecognized action

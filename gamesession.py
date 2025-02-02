@@ -16,6 +16,7 @@ class GameSession:
         self.session_id = session_id
         self.players: dict[str, Player] = {}
         self.game_started = False
+        self.rounds = 6
 
         self.story = ""  # The story so far
         self.votes = {}  # {player_id: score}
@@ -82,12 +83,22 @@ class GameSession:
             
             
 
+    def reset_game(self):
+        self.game_started = False
+        self.story = ""
+        self.reset_votes()
+        self.snippet_results = {}
+        self.starting_prompt = PromptGenerator().generate_prompt(message)
+
+    
+
     def all_votes_in(self) -> bool:
         # Returns true once all players have voted
         for player in self.players:
             if not self.voted[player]:
                 return False
 
+        self.rounds -= 1
         return True
 
     def tally_votes_and_finalize(self):
