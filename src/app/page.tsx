@@ -1,14 +1,27 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import useWebSocket from "@/app/hooks/useWebSocket";
+import { useState, useEffect } from "react";
+import { useWebSocket } from "@/contexts/WebSocketProvider";
 
 export default function Home() {
-  const { messages, sendMessage, sessionId, playerId } = useWebSocket("ws://127.0.0.1:8000/ws");
+  const { messages, sendMessage } = useWebSocket();
   const [gameCode, setGameCode] = useState("");
   const [playerName, setPlayerName] = useState("");
   const router = useRouter();
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      const latestMessage = messages[messages.length - 1];
+
+      if (latestMessage.event === "session_created") {
+        console.log("✅ Session created:", latestMessage.session_id);
+        // join the session
+        sendMessage({ action: "join_session", session_id: latestMessage.session_id, player_name: playerName });
+        router.push(`/lobby?sessionId=${latestMessage.session_id}&playerName=${latestMessage.player_name}`);
+      }
+    }
+  }, [messages, router]);
 
   /**
    * Create a new game session.
@@ -19,6 +32,7 @@ export default function Home() {
       return;
     }
     sendMessage({ action: "create_session", player_name: playerName });
+    // router.push(`/lobby?sessionId=${latestMessage.session_id}&playerId=${latestMessage.player_id}`);
   };
 
   /**
@@ -31,13 +45,6 @@ export default function Home() {
     }
     sendMessage({ action: "join_session", session_id: gameCode, player_name: playerName });
   };
-
-  /**
-   * Navigate to the game room once a session is created or joined.
-   */
-  if (sessionId) {
-    router.push(`/game?sessionId=${sessionId}&playerId=${playerId}`);
-  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-900 text-white">
