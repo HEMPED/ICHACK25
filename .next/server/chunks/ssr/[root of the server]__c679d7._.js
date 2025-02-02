@@ -32,24 +32,180 @@ const mod = __turbopack_external_require__("next/dist/server/app-render/work-asy
 
 module.exports = mod;
 }}),
-"[project]/src/app/game/page.tsx [app-ssr] (ecmascript)": ((__turbopack_context__) => {
+"[project]/src/app/hooks/useWebSocket.js [app-ssr] (ecmascript)": ((__turbopack_context__) => {
 "use strict";
 
 var { r: __turbopack_require__, f: __turbopack_module_context__, i: __turbopack_import__, s: __turbopack_esm__, v: __turbopack_export_value__, n: __turbopack_export_namespace__, c: __turbopack_cache__, M: __turbopack_modules__, l: __turbopack_load__, j: __turbopack_dynamic__, P: __turbopack_resolve_absolute_path__, U: __turbopack_relative_url__, R: __turbopack_resolve_module_id_path__, b: __turbopack_worker_blob_url__, g: global, __dirname, x: __turbopack_external_require__, y: __turbopack_external_import__, z: __turbopack_require_stub__ } = __turbopack_context__;
 {
 __turbopack_esm__({
-    "default": (()=>Game)
+    "default": (()=>__TURBOPACK__default__export__)
+});
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_import__("[project]/node_modules/next/dist/server/route-modules/app-page/vendored/ssr/react.js [app-ssr] (ecmascript)");
+;
+const useWebSocket = (url)=>{
+    const [messages, setMessages] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])([]);
+    const [ws, setWs] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
+    const [sessionId, setSessionId] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
+    const [playerId, setPlayerId] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
+        const socket = new WebSocket(url);
+        socket.onopen = ()=>{
+            console.log("✅ WebSocket connection opened");
+        };
+        socket.onmessage = (event)=>{
+            const data = JSON.parse(event.data);
+            console.log("📩 Received:", data);
+            // Store messages
+            setMessages((prevMessages)=>[
+                    ...prevMessages,
+                    data
+                ]);
+            // Handle session creation
+            if (data.event === "session_created") {
+                setSessionId(data.session_id);
+                setPlayerId(data.player_id);
+            }
+            // Handle joining a session
+            if (data.event === "session_joined") {
+                setSessionId(data.session_id);
+                setPlayerId(data.player_id);
+            }
+        };
+        socket.onerror = (error)=>{
+            console.error("❌ WebSocket Error:", error);
+        };
+        socket.onclose = ()=>{
+            console.log("❌ WebSocket disconnected");
+        };
+        setWs(socket);
+        return ()=>{
+            socket.close();
+        };
+    }, [
+        url
+    ]);
+    /**
+   * Send a JSON message to the WebSocket server.
+   * @param {Object} message - The message object to send.
+   */ const sendMessage = (message)=>{
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify(message));
+        } else {
+            console.warn("WebSocket is not open.");
+        }
+    };
+    /**
+   * Create a new game session.
+   * @param {string} playerName - Name of the player creating the session.
+   */ const createSession = (playerName)=>{
+        sendMessage({
+            action: "create_session",
+            player_name: playerName
+        });
+    };
+    /**
+   * Join an existing game session.
+   * @param {string} sessionId - The session ID to join.
+   * @param {string} playerName - The name of the joining player.
+   */ const joinSession = (sessionId, playerName)=>{
+        sendMessage({
+            action: "join_session",
+            session_id: sessionId,
+            player_name: playerName
+        });
+    };
+    /**
+   * Submit a snippet for voting.
+   * @param {string} snippet - The text snippet to submit.
+   */ const submitSnippet = (snippet)=>{
+        if (!sessionId) {
+            console.warn("❌ You are not in a session.");
+            return;
+        }
+        sendMessage({
+            action: "submit_snippet",
+            snippet
+        });
+    };
+    /**
+   * Submit votes for snippets.
+   * @param {Array} votes - An array of player IDs being voted for.
+   */ const submitVotes = (votes)=>{
+        if (!sessionId) {
+            console.warn("You are not in a session.");
+            return;
+        }
+        sendMessage({
+            action: "submit_votes",
+            voter_id: playerId,
+            votes
+        });
+    };
+    return {
+        messages,
+        sendMessage,
+        createSession,
+        joinSession,
+        submitSnippet,
+        submitVotes,
+        sessionId,
+        playerId
+    };
+};
+const __TURBOPACK__default__export__ = useWebSocket;
+}}),
+"[project]/src/app/page.tsx [app-ssr] (ecmascript)": ((__turbopack_context__) => {
+"use strict";
+
+var { r: __turbopack_require__, f: __turbopack_module_context__, i: __turbopack_import__, s: __turbopack_esm__, v: __turbopack_export_value__, n: __turbopack_export_namespace__, c: __turbopack_cache__, M: __turbopack_modules__, l: __turbopack_load__, j: __turbopack_dynamic__, P: __turbopack_resolve_absolute_path__, U: __turbopack_relative_url__, R: __turbopack_resolve_module_id_path__, b: __turbopack_worker_blob_url__, g: global, __dirname, x: __turbopack_external_require__, y: __turbopack_external_import__, z: __turbopack_require_stub__ } = __turbopack_context__;
+{
+__turbopack_esm__({
+    "default": (()=>Home)
 });
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_import__("[project]/node_modules/next/dist/server/route-modules/app-page/vendored/ssr/react-jsx-dev-runtime.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_import__("[project]/node_modules/next/navigation.js [app-ssr] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_import__("[project]/node_modules/next/dist/server/route-modules/app-page/vendored/ssr/react.js [app-ssr] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$app$2f$hooks$2f$useWebSocket$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_import__("[project]/src/app/hooks/useWebSocket.js [app-ssr] (ecmascript)");
 "use client";
 ;
 ;
-function Game() {
+;
+;
+function Home() {
+    const { messages, sendMessage, sessionId, playerId } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$app$2f$hooks$2f$useWebSocket$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"])("ws://127.0.0.1:8000/ws");
+    const [gameCode, setGameCode] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])("");
+    const [playerName, setPlayerName] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])("");
     const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRouter"])();
-    const handleCreateGame = ()=>{
-        router.push('/game'); // Change to your target page
+    /**
+   * Create a new game session.
+   */ const handleCreateGame = ()=>{
+        if (!playerName.trim()) {
+            alert("Enter a player name before creating a game.");
+            return;
+        }
+        sendMessage({
+            action: "create_session",
+            player_name: playerName
+        });
     };
+    /**
+   * Join an existing game session.
+   */ const handleJoinGame = ()=>{
+        if (!gameCode.trim() || !playerName.trim()) {
+            alert("Enter a valid game code and player name.");
+            return;
+        }
+        sendMessage({
+            action: "join_session",
+            session_id: gameCode,
+            player_name: playerName
+        });
+    };
+    /**
+   * Navigate to the game room once a session is created or joined.
+   */ if (sessionId) {
+        router.push(`/game?sessionId=${sessionId}&playerId=${playerId}`);
+    }
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         className: "flex items-center justify-center min-h-screen bg-gray-900 text-white",
         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -57,10 +213,10 @@ function Game() {
             children: [
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
                     className: "text-2xl font-bold text-center mb-4",
-                    children: "2"
+                    children: "Welcome"
                 }, void 0, false, {
-                    fileName: "[project]/src/app/game/page.tsx",
-                    lineNumber: 17,
+                    fileName: "[project]/src/app/page.tsx",
+                    lineNumber: 45,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -68,19 +224,33 @@ function Game() {
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
                             type: "text",
-                            placeholder: "Enter Game Code",
+                            placeholder: "Enter Your Name",
+                            value: playerName,
+                            onChange: (e)=>setPlayerName(e.target.value),
                             className: "w-full p-2 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         }, void 0, false, {
-                            fileName: "[project]/src/app/game/page.tsx",
-                            lineNumber: 19,
+                            fileName: "[project]/src/app/page.tsx",
+                            lineNumber: 47,
+                            columnNumber: 11
+                        }, this),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                            type: "text",
+                            placeholder: "Enter Game Code",
+                            value: gameCode,
+                            onChange: (e)=>setGameCode(e.target.value),
+                            className: "w-full p-2 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        }, void 0, false, {
+                            fileName: "[project]/src/app/page.tsx",
+                            lineNumber: 54,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                            onClick: handleJoinGame,
                             className: "w-full p-2 bg-blue-600 hover:bg-blue-500 rounded-lg font-semibold",
                             children: "Join Game"
                         }, void 0, false, {
-                            fileName: "[project]/src/app/game/page.tsx",
-                            lineNumber: 24,
+                            fileName: "[project]/src/app/page.tsx",
+                            lineNumber: 61,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -89,44 +259,44 @@ function Game() {
                                 className: "text-gray-400",
                                 children: "or"
                             }, void 0, false, {
-                                fileName: "[project]/src/app/game/page.tsx",
-                                lineNumber: 28,
+                                fileName: "[project]/src/app/page.tsx",
+                                lineNumber: 68,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
-                            fileName: "[project]/src/app/game/page.tsx",
-                            lineNumber: 27,
+                            fileName: "[project]/src/app/page.tsx",
+                            lineNumber: 67,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                            className: "w-full p-2 bg-green-600 hover:bg-green-500 rounded-lg font-semibold",
                             onClick: handleCreateGame,
+                            className: "w-full p-2 bg-green-600 hover:bg-green-500 rounded-lg font-semibold",
                             children: "Create Game"
                         }, void 0, false, {
-                            fileName: "[project]/src/app/game/page.tsx",
-                            lineNumber: 30,
+                            fileName: "[project]/src/app/page.tsx",
+                            lineNumber: 70,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
-                    fileName: "[project]/src/app/game/page.tsx",
-                    lineNumber: 18,
+                    fileName: "[project]/src/app/page.tsx",
+                    lineNumber: 46,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
-            fileName: "[project]/src/app/game/page.tsx",
-            lineNumber: 16,
+            fileName: "[project]/src/app/page.tsx",
+            lineNumber: 44,
             columnNumber: 7
         }, this)
     }, void 0, false, {
-        fileName: "[project]/src/app/game/page.tsx",
-        lineNumber: 15,
+        fileName: "[project]/src/app/page.tsx",
+        lineNumber: 43,
         columnNumber: 5
     }, this);
 }
 }}),
-"[project]/src/app/game/page.tsx [app-rsc] (ecmascript, Next.js server component, client modules ssr)": ((__turbopack_context__) => {
+"[project]/src/app/page.tsx [app-rsc] (ecmascript, Next.js server component, client modules ssr)": ((__turbopack_context__) => {
 
 var { r: __turbopack_require__, f: __turbopack_module_context__, i: __turbopack_import__, s: __turbopack_esm__, v: __turbopack_export_value__, n: __turbopack_export_namespace__, c: __turbopack_cache__, M: __turbopack_modules__, l: __turbopack_load__, j: __turbopack_dynamic__, P: __turbopack_resolve_absolute_path__, U: __turbopack_relative_url__, R: __turbopack_resolve_module_id_path__, b: __turbopack_worker_blob_url__, g: global, __dirname, t: __turbopack_require_real__ } = __turbopack_context__;
 {
@@ -1728,4 +1898,4 @@ module.exports = __turbopack_require__("[project]/node_modules/next/dist/client/
 
 };
 
-//# sourceMappingURL=%5Broot%20of%20the%20server%5D__e26a5e._.js.map
+//# sourceMappingURL=%5Broot%20of%20the%20server%5D__c679d7._.js.map

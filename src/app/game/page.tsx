@@ -1,14 +1,15 @@
 "use client"
 
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function Game() {
+
   const router = useRouter();
 
   const handleCreateGame = () => {
     router.push('/game'); // Change to your target page
   };
-
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-900 text-white">
