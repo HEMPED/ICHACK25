@@ -18,7 +18,7 @@ export default function Home() {
         console.log("✅ Session created:", latestMessage.session_id);
         // join the session
         sendMessage({ action: "join_session", session_id: latestMessage.session_id, player_name: playerName });
-        router.push(`/lobby?sessionId=${latestMessage.session_id}&playerName=${latestMessage.player_name}`);
+        router.push(`/lobby?sessionId=${latestMessage.session_id}`);
       }
     }
   }, [messages, router]);

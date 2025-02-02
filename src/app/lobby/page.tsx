@@ -8,43 +8,47 @@ import { useRouter } from "next/navigation";
 import { useSearchParams } from 'next/navigation'
 
 export default function Lobby() {
+    const searchParams = useSearchParams()
     const router = useRouter();
     const { messages } = useWebSocket();
     const [serverMessage, setServerMessage] = useState<string | null>(null);
     const [show, setShow] = useState(false);
     const [players, setPlayers] = useState<string[]>(Array(5).fill(""));
-    const searchParams = useSearchParams();
+    const [lobbyId, setLobbyId] = useState<string | null>("PLACEHOLDER");
 
     // Listen for WebSocket messages
     useEffect(() => {
     if (messages.length > 0) {
+        if (lobbyId === "PLACEHOLDER") {
+            setLobbyId(searchParams.get("sessionId"));
+        }
         const latestMessage = messages[messages.length - 1];
         if (latestMessage.event === "player_joined") {
-        const newPlayers = [...players];
-        // append the new player to the list
-        let i = 0;
-        for (i < newPlayers.length; i++;) {
-            if (newPlayers[i] === "") {
-            newPlayers[i] = latestMessage.player_name;
-            break;
+            var NewPlayers = players;
+            console.log("NewPlayers", NewPlayers);
+            // append the new player to the list
+            for (let i = 0; i < 5; i++) {
+                console.log("NewPlayers[i]", NewPlayers[i]);
+                if (NewPlayers[i] === "") {
+                  console.log("New player joined:", latestMessage.player_name);
+                  NewPlayers[i] = latestMessage.player_name;
+                  break; // Stop once a spot is filled
+                }
+              }
+            setPlayers(NewPlayers);
+            if (players[4] !== "") {
+                router.push(`/game?sessionId=${latestMessage.session_id}`);
             }
-        }
-        newPlayers.push(latestMessage.player_name);
-        setPlayers(newPlayers);
-        if (i === 4) {
-            router.push(`/game?sessionId=${latestMessage.session_id}&playerName=${latestMessage.player_name}`);
-        }
         } else if (latestMessage.event === "session_joined") {
-        // have to have list of length 5
-        var newPlayers = latestMessage.existing_players.map((player: any) => player.player_name || "");
-        if (newPlayers.length === 5) {
-            router.push(`/game?sessionId=${latestMessage.session_id}&playerName=${latestMessage.player_name}`);
-        } else {
-            while (newPlayers.length < 5) {
-                newPlayers.push("");
+            var newPlayers = latestMessage.existing_players.map((player: any) => player.player_name || "");
+            if (newPlayers.length === 5) {
+                router.push(`/game?sessionId=${latestMessage.session_id}`);
+            } else {
+                while (newPlayers.length < 5) {
+                    newPlayers.push("");
+                }
             }
-        }
-        setPlayers(newPlayers);
+            setPlayers(newPlayers);
         }
         setServerMessage(latestMessage);
         setShow(true);
@@ -70,7 +74,7 @@ export default function Lobby() {
         className="flex flex-col items-center space-y-6"
         >
         <div className="text-2xl font-bold text-gray-200 text-center">
-            Lobby - Waiting for Players
+            Lobby - Waiting for Players <br /> {lobbyId}
         </div>
         <div className="w-full max-w-md space-y-2">
             {players.map((player, index) => (
