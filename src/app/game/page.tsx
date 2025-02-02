@@ -1,6 +1,7 @@
 "use client"
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
 
 export default function Game() {
   const [userInput, setUserInput] = useState('');
@@ -25,11 +26,17 @@ export default function Game() {
   return (
     <div className="flex flex-col items-center justify-center h-screen p-4 bg-gray-900 text-white">
       {!submitted ? (
-        <div className="flex flex-col items-center space-y-4">
+        <motion.div 
+          initial={{ opacity: 1, y: 0 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.5 }}
+          className="flex flex-col items-center space-y-4"
+        >
           <div 
             className="text-4xl font-bold text-gray-200 text-center w-full max-w-xl mt-[-50px]"
           >
-            Generated Prompt
+            This is the Prompt
           </div>
           <input
             type="text"
@@ -45,23 +52,31 @@ export default function Game() {
           >
             Submit
           </button>
-        </div>
+        </motion.div>
       ) : (
-        <div className="flex flex-col items-center justify-center h-screen p-4">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="flex flex-col items-center justify-center h-screen p-4"
+        >
           <div className="text-4xl font-bold text-gray-200 text-center w-full max-w-xl mb-16 mt-[-50px]">
-            Generated Prompt
+            This is the Prompt
           </div>
           <div className="flex justify-center flex-wrap gap-6 w-full max-w-4xl">
             {buttons.map((button, index) => (
-              <button 
+              <motion.button 
                 key={index} 
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3, delay: index * 0.1 }}
                 className={`${button.color} text-white font-semibold py-8 px-12 text-xl rounded-lg shadow-md transition flex-1 min-w-[150px] text-center`}
               >
                 {button.text}
-              </button>
+              </motion.button>
             ))}
           </div>
-        </div>
+        </motion.div>
       )}
     </div>
   );
