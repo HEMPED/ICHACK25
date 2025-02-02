@@ -18,11 +18,31 @@ var _s = __turbopack_refresh__.signature();
 ;
 function Game() {
     _s();
-    const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"])();
     const [userInput, setUserInput] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])('');
     const [submitted, setSubmitted] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
+    const [buttonText, setButtonText] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])('');
+    const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"])();
+    const buttons = [
+        {
+            text: buttonText || "Button 1",
+            color: "bg-blue-500 hover:bg-blue-600"
+        },
+        {
+            text: "Button 2",
+            color: "bg-green-500 hover:bg-green-600"
+        },
+        {
+            text: "Button 3",
+            color: "bg-red-500 hover:bg-red-600"
+        },
+        {
+            text: "Button 4",
+            color: "bg-yellow-500 hover:bg-yellow-600"
+        }
+    ];
     const handleSubmit = ()=>{
         if (userInput.trim() !== '') {
+            setButtonText(userInput);
             setSubmitted(true);
         }
     };
@@ -32,21 +52,11 @@ function Game() {
             className: "flex flex-col items-center space-y-4",
             children: [
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "text-2xl font-bold text-gray-200 text-center w-full max-w-xl",
-                    children: [
-                        "This is the Prompt ",
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                            className: "underline",
-                            children: userInput
-                        }, void 0, false, {
-                            fileName: "[project]/src/app/game/page.tsx",
-                            lineNumber: 24,
-                            columnNumber: 32
-                        }, this)
-                    ]
-                }, void 0, true, {
+                    className: "text-4xl font-bold text-gray-200 text-center w-full max-w-xl mt-[-50px]",
+                    children: "Generated Prompt"
+                }, void 0, false, {
                     fileName: "[project]/src/app/game/page.tsx",
-                    lineNumber: 21,
+                    lineNumber: 29,
                     columnNumber: 11
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -58,98 +68,62 @@ function Game() {
                     autoFocus: true
                 }, void 0, false, {
                     fileName: "[project]/src/app/game/page.tsx",
-                    lineNumber: 26,
+                    lineNumber: 34,
                     columnNumber: 11
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                    className: "bg-blue-500 text-white font-semibold py-2 px-6 rounded-lg hover:bg-blue-600 transition",
+                    className: "bg-blue-500 text-white font-semibold py-2 px-24 rounded-lg hover:bg-blue-600 transition",
                     onClick: handleSubmit,
                     children: "Submit"
                 }, void 0, false, {
                     fileName: "[project]/src/app/game/page.tsx",
-                    lineNumber: 34,
+                    lineNumber: 42,
                     columnNumber: 11
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/src/app/game/page.tsx",
-            lineNumber: 20,
+            lineNumber: 28,
             columnNumber: 9
         }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-            className: "flex flex-col items-center justify-start h-screen p-4",
+            className: "flex flex-col items-center justify-center h-screen p-4",
             children: [
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "text-2xl font-bold mt-6 text-gray-200 text-center w-full max-w-xl",
-                    children: [
-                        "This is the Prompt ",
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                            className: "underline",
-                            children: userInput
-                        }, void 0, false, {
-                            fileName: "[project]/src/app/game/page.tsx",
-                            lineNumber: 44,
-                            columnNumber: 32
-                        }, this)
-                    ]
-                }, void 0, true, {
+                    className: "text-4xl font-bold text-gray-200 text-center w-full max-w-xl mb-16 mt-[-50px]",
+                    children: "Generated Prompt"
+                }, void 0, false, {
                     fileName: "[project]/src/app/game/page.tsx",
-                    lineNumber: 43,
+                    lineNumber: 51,
                     columnNumber: 11
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "grid grid-cols-2 gap-24 mt-auto mb-20 w-full max-w-2xl",
-                    children: [
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                            className: "bg-blue-500 text-white font-semibold py-8 px-12 text-xl rounded-lg shadow-md hover:bg-blue-600 transition",
-                            children: userInput
-                        }, void 0, false, {
+                    className: "flex justify-center flex-wrap gap-6 w-full max-w-4xl",
+                    children: buttons.map((button, index)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                            className: `${button.color} text-white font-semibold py-8 px-12 text-xl rounded-lg shadow-md transition flex-1 min-w-[150px] text-center`,
+                            children: button.text
+                        }, index, false, {
                             fileName: "[project]/src/app/game/page.tsx",
-                            lineNumber: 47,
-                            columnNumber: 13
-                        }, this),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                            className: "bg-green-500 text-white font-semibold py-8 px-12 text-xl rounded-lg shadow-md hover:bg-green-600 transition",
-                            children: "Button 2"
-                        }, void 0, false, {
-                            fileName: "[project]/src/app/game/page.tsx",
-                            lineNumber: 48,
-                            columnNumber: 13
-                        }, this),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                            className: "bg-red-500 text-white font-semibold py-8 px-12 text-xl rounded-lg shadow-md hover:bg-red-600 transition",
-                            children: "Button 3"
-                        }, void 0, false, {
-                            fileName: "[project]/src/app/game/page.tsx",
-                            lineNumber: 49,
-                            columnNumber: 13
-                        }, this),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                            className: "bg-yellow-500 text-white font-semibold py-8 px-12 text-xl rounded-lg shadow-md hover:bg-yellow-600 transition",
-                            children: "Button 4"
-                        }, void 0, false, {
-                            fileName: "[project]/src/app/game/page.tsx",
-                            lineNumber: 50,
-                            columnNumber: 13
-                        }, this)
-                    ]
-                }, void 0, true, {
+                            lineNumber: 56,
+                            columnNumber: 15
+                        }, this))
+                }, void 0, false, {
                     fileName: "[project]/src/app/game/page.tsx",
-                    lineNumber: 46,
+                    lineNumber: 54,
                     columnNumber: 11
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/src/app/game/page.tsx",
-            lineNumber: 42,
+            lineNumber: 50,
             columnNumber: 9
         }, this)
     }, void 0, false, {
         fileName: "[project]/src/app/game/page.tsx",
-        lineNumber: 18,
+        lineNumber: 26,
         columnNumber: 5
     }, this);
 }
-_s(Game, "Jb+tcAYBtS66BgPpmG2lZoRoFfQ=", false, function() {
+_s(Game, "s+U72ChGUPKJUIj8za7VLBBA1GU=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"]
     ];

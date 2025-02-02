@@ -3,13 +3,21 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function Game() {
-  const router = useRouter();
-
   const [userInput, setUserInput] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [buttonText, setButtonText] = useState('');
+  const router = useRouter();
+
+  const buttons = [
+    { text: buttonText || "Button 1", color: "bg-blue-500 hover:bg-blue-600" },
+    { text: "Button 2", color: "bg-green-500 hover:bg-green-600" },
+    { text: "Button 3", color: "bg-red-500 hover:bg-red-600" },
+    { text: "Button 4", color: "bg-yellow-500 hover:bg-yellow-600" }
+  ];
 
   const handleSubmit = () => {
     if (userInput.trim() !== '') {
+      setButtonText(userInput);
       setSubmitted(true);
     }
   };
@@ -19,9 +27,9 @@ export default function Game() {
       {!submitted ? (
         <div className="flex flex-col items-center space-y-4">
           <div 
-            className="text-2xl font-bold text-gray-200 text-center w-full max-w-xl"
+            className="text-4xl font-bold text-gray-200 text-center w-full max-w-xl mt-[-50px]"
           >
-            This is the Prompt <span className="underline">{userInput}</span>
+            Generated Prompt
           </div>
           <input
             type="text"
@@ -32,22 +40,26 @@ export default function Game() {
             autoFocus
           />
           <button 
-            className="bg-blue-500 text-white font-semibold py-2 px-6 rounded-lg hover:bg-blue-600 transition"
+            className="bg-blue-500 text-white font-semibold py-2 px-24 rounded-lg hover:bg-blue-600 transition"
             onClick={handleSubmit}
           >
             Submit
           </button>
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-start h-screen p-4">
-          <div className="text-2xl font-bold mt-6 text-gray-200 text-center w-full max-w-xl">
-            This is the Prompt <span className="underline">{userInput}</span>
+        <div className="flex flex-col items-center justify-center h-screen p-4">
+          <div className="text-4xl font-bold text-gray-200 text-center w-full max-w-xl mb-16 mt-[-50px]">
+            Generated Prompt
           </div>
-          <div className="grid grid-cols-2 gap-24 mt-auto mb-20 w-full max-w-2xl">
-            <button className="bg-blue-500 text-white font-semibold py-8 px-12 text-xl rounded-lg shadow-md hover:bg-blue-600 transition">{userInput}</button>
-            <button className="bg-green-500 text-white font-semibold py-8 px-12 text-xl rounded-lg shadow-md hover:bg-green-600 transition">Button 2</button>
-            <button className="bg-red-500 text-white font-semibold py-8 px-12 text-xl rounded-lg shadow-md hover:bg-red-600 transition">Button 3</button>
-            <button className="bg-yellow-500 text-white font-semibold py-8 px-12 text-xl rounded-lg shadow-md hover:bg-yellow-600 transition">Button 4</button>
+          <div className="flex justify-center flex-wrap gap-6 w-full max-w-4xl">
+            {buttons.map((button, index) => (
+              <button 
+                key={index} 
+                className={`${button.color} text-white font-semibold py-8 px-12 text-xl rounded-lg shadow-md transition flex-1 min-w-[150px] text-center`}
+              >
+                {button.text}
+              </button>
+            ))}
           </div>
         </div>
       )}
